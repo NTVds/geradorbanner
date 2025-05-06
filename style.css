@@ -1,0 +1,111 @@
+/* Reset básico de estilos */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Fonte do Google */
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #1c1c1c;
+    color: white;
+    padding: 0 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* Container principal */
+.container {
+    background-color: #222;
+    border-radius: 8px;
+    padding: 40px;
+    width: 100%;
+    max-width: 800px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    text-align: center;
+}
+
+.header h1 {
+    font-size: 32px;
+    color: #6a4c9c;
+    margin-bottom: 10px;
+}
+
+.header p {
+    font-size: 18px;
+    color: #aaa;
+    margin-bottom: 20px;
+}
+
+/* Estilo dos campos de input */
+.input-group {
+    margin-bottom: 20px;
+}
+
+input, select {
+    width: 100%;
+    padding: 10px;
+    margin-top: 8px;
+    background-color: #333;
+    border: 1px solid #555;
+    color: #fff;
+    font-size: 16px;
+    border-radius: 5px;
+}
+
+input:focus, select:focus {
+    border-color: #6a4c9c;
+    outline: none;
+}
+
+/* Botões */
+button {
+    padding: 12px 30px;
+    background-color: #6a4c9c;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #5a3c8b;
+}
+
+.download-btn {
+    background-color: #4CAF50;
+    display: none;
+    margin-top: 20px;
+}
+
+.download-btn:hover {
+    background-color: #45a049;
+}
+
+/* Exibição de conteúdo e logo */
+#contentResults {
+    margin-top: 20px;
+    color: white;
+}
+
+#contentResults img {
+    max-width: 300px;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+
+#logoUpload {
+    display: none;
+    margin-top: 30px;
+}
+
+#generatedBanner img {
+    max-width: 100%;
+    border-radius: 8px;
+    margin-top: 30px;
+}
