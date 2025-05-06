@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Banner</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Gerador de Banner</h1>
+            <p>Crie banners personalizados para filmes, séries e novelas</p>
+        </div>
+        
+        <form id="bannerForm">
+            <div class="input-group">
+                <label for="mediaType">Escolha o tipo de mídia:</label>
+                <select id="mediaType">
+                    <option value="movie">Filme</option>
+                    <option value="tv">Série</option>
+                    <option value="novel">Novela</option>
+                </select>
+            </div>
+            
+            <div class="input-group">
+                <label for="search">Pesquise o conteúdo:</label>
+                <input type="text" id="search" placeholder="Digite o nome" required>
+            </div>
+            
+            <div class="btn-container">
+                <button type="submit">Pesquisar</button>
+            </div>
+        </form>
+
+        <div id="contentResults" class="content-results"></div>
+
+        <div id="logoUpload" class="logo-upload">
+            <label for="logo">Adicionar Logomarca:</label>
+            <input type="file" id="logo" accept="image/*">
+        </div>
+
+        <div id="generatedBanner" class="generated-banner"></div>
+
+        <button id="downloadBtn" class="download-btn">Baixar Banner</button>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
