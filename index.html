@@ -4,29 +4,22 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Gerador de Banner</title>
-  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="container">
-    <h1>Gerador de Banner de Filmes, Séries e Novelas</h1>
-    <form id="bannerForm">
-      <input type="text" id="search" placeholder="Digite o nome do conteúdo" required />
-      <select id="mediaType">
-        <option value="movie">Filme</option>
-        <option value="tv">Série / Novela</option>
-      </select>
-      <button type="submit">Buscar</button>
-    </form>
+    <h1>Gerador de Banner</h1>
 
-    <div id="contentResults" class="content-results"></div>
+    <input type="text" id="searchInput" placeholder="Digite o nome do filme, série ou novela" />
+    <input type="file" id="logoInput" accept="image/*" />
 
-    <div id="logoUpload" style="display: none;">
-      <label for="logo">Escolher Logomarca:</label>
-      <input type="file" id="logo" accept="image/*" />
-    </div>
+    <button onclick="buscarConteudo()">Buscar e Gerar Banner</button>
 
-    <canvas id="bannerCanvas" width="1080" height="1080" style="display:none;"></canvas>
-    <a id="downloadLink" download="banner.png" style="display:none;">Baixar Banner</a>
+    <canvas id="bannerCanvas" width="1080" height="1080"></canvas>
+
+    <a id="downloadLink" style="display: none; margin-top: 20px;" download="banner.png" class="download-btn">
+      Baixar Banner
+    </a>
   </div>
 
   <script src="script.js"></script>
