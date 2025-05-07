@@ -1,96 +1,97 @@
-const apiKey = 'eb93e716b56767d9b0e6d4fdcf25a511';
+const tmdbKey = "eb93e716b56767d9b0e6d4fdcf25a511";
+let selectedData = null;
+let logoImage = null;
+let bgImage = null;
 
-async function buscarConteudo() {
-  const query = document.getElementById('searchInput').value;
-  if (!query) return alert("Digite um nome.");
+document.getElementById('logoUpload').addEventListener('change', function (e) {
+  const reader = new FileReader();
+  reader.onload = () => logoImage = reader.result;
+  reader.readAsDataURL(e.target.files[0]);
+});
 
-  const response = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${query}&language=pt-BR`);
-  const data = await response.json();
+document.getElementById('bgUpload').addEventListener('change', function (e) {
+  const reader = new FileReader();
+  reader.onload = () => bgImage = reader.result;
+  reader.readAsDataURL(e.target.files[0]);
+});
 
-  if (data.results.length === 0) {
-    alert("Nenhum conteúdo encontrado.");
-    return;
-  }
-
-  const item = data.results[0];
-  const title = item.title || item.name || "Sem título";
-  const overview = item.overview || "Sem sinopse.";
-  const year = (item.release_date || item.first_air_date || "0000").split('-')[0];
-  const imageUrl = `https://image.tmdb.org/t/p/original${item.backdrop_path || item.poster_path}`;
-
-  const logoInput = document.getElementById('logoInput');
-  const logoFile = logoInput.files[0];
-
-  generateBanner(title, overview, year, imageUrl, logoFile);
+function buscarTMDB() {
+  const query = document.getElementById('tmdbQuery').value;
+  fetch(`https://api.themoviedb.org/3/search/multi?api_key=${tmdbKey}&language=pt-BR&query=${encodeURIComponent(query)}`)
+    .then(res => res.json())
+    .then(data => {
+      const result = data.results[0];
+      if (!result) return alert("Nenhum resultado encontrado.");
+      selectedData = result;
+      desenharBanner();
+    });
 }
 
-function wrapText(ctx, text, maxWidth) {
-  const words = text.split(' ');
-  const lines = [];
-  let line = '';
+function desenharBanner() {
+  const canvas = document.getElementById('bannerCanvas');
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, 1080, 1080);
 
-  for (let i = 0; i < words.length; i++) {
-    const testLine = line + words[i] + ' ';
+  const posterUrl = `https://image.tmdb.org/t/p/w500${selectedData.poster_path}`;
+  const title = selectedData.name || selectedData.title || 'Sem título';
+  const overview = selectedData.overview || 'Sinopse indisponível';
+  const tipo = selectedData.media_type === "tv" ? "SÉRIE DISPONÍVEL" : "FILME DISPONÍVEL";
+
+  const posterImg = new Image();
+  posterImg.crossOrigin = "anonymous";
+  posterImg.src = posterUrl;
+
+  posterImg.onload = () => {
+    const bg = new Image();
+    bg.src = bgImage || "https://i.imgur.com/j0rC7pv.jpg";
+
+    bg.onload = () => {
+      ctx.drawImage(bg, 0, 0, 1080, 1080);
+      ctx.drawImage(posterImg, 80, 250, 350, 525);
+
+      if (logoImage) {
+        const logo = new Image();
+        logo.src = logoImage;
+        logo.onload = () => ctx.drawImage(logo, 60, 60, 250, 80);
+      }
+
+      ctx.fillStyle = "white";
+      ctx.font = "bold 48px Arial";
+      ctx.fillText(tipo, 470, 300);
+
+      ctx.font = "24px Arial";
+      wrapText(ctx, overview, 470, 360, 540, 32);
+
+      ctx.font = "bold 36px Arial";
+      ctx.fillText("ASSINE JÁ!", 400, 1000);
+
+      document.getElementById("downloadBtn").style.display = "inline-block";
+    };
+  };
+}
+
+function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+  const words = text.split(' ');
+  let line = '';
+  for (let n = 0; n < words.length; n++) {
+    const testLine = line + words[n] + ' ';
     const metrics = ctx.measureText(testLine);
     const testWidth = metrics.width;
-    if (testWidth > maxWidth && i > 0) {
-      lines.push(line.trim());
-      line = words[i] + ' ';
+    if (testWidth > maxWidth && n > 0) {
+      ctx.fillText(line, x, y);
+      line = words[n] + ' ';
+      y += lineHeight;
     } else {
       line = testLine;
     }
   }
-  lines.push(line.trim());
-  return lines.slice(0, 4);
+  ctx.fillText(line, x, y);
 }
 
-function generateBanner(title, overview, year, imageUrl, logoFile) {
+function baixarBanner() {
   const canvas = document.getElementById('bannerCanvas');
-  const ctx = canvas.getContext('2d');
-
-  const background = new Image();
-  background.crossOrigin = "anonymous";
-  background.src = imageUrl;
-
-  background.onload = () => {
-    ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
-
-    if (logoFile) {
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        const logo = new Image();
-        logo.src = e.target.result;
-        logo.onload = () => {
-          const logoSize = 200;
-          ctx.drawImage(logo, canvas.width - logoSize - 30, 30, logoSize, logoSize);
-          desenharTexto();
-        };
-      };
-      reader.readAsDataURL(logoFile);
-    } else {
-      desenharTexto();
-    }
-
-    function desenharTexto() {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-      ctx.fillRect(0, canvas.height - 300, canvas.width, 300);
-
-      ctx.fillStyle = '#fff';
-      ctx.font = 'bold 40px sans-serif';
-      ctx.fillText(title, 30, canvas.height - 240);
-
-      ctx.font = '30px sans-serif';
-      ctx.fillText(year, 30, canvas.height - 200);
-
-      ctx.font = '24px sans-serif';
-      const lines = wrapText(ctx, overview, canvas.width - 60);
-      lines.forEach((line, i) => {
-        ctx.fillText(line, 30, canvas.height - 160 + i * 28);
-      });
-
-      const link = document.getElementById('downloadLink');
-      link.href = canvas.toDataURL('image/png');
-      link.style.display = 'inline-block';
-    }
-  };
+  const link = document.createElement('a');
+  link.download = 'banner.png';
+  link.href = canvas.toDataURL();
+  link.click();
 }
