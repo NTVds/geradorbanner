@@ -1,34 +1,42 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Gerador de Banner</title>
-  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="container">
     <h1>Gerador de Banner</h1>
 
-    <input type="text" id="search" placeholder="Digite o nome do conteúdo"/>
-    <button onclick="buscar()">Buscar</button><br/><br/>
+    <input type="text" id="searchInput" placeholder="Digite o nome do filme ou série" />
+    <button id="searchButton">Buscar</button>
 
-    <select id="conteudo-select"></select> Logo da sua marca:
-    <input type="file" id="logo" accept="image/*"/><br/><br/>
+    <div id="searchResult" class="hidden"></div>
 
-    Imagem de fundo:
-    <input type="file" id="fundo" accept="image/*"/><br/><br/>
+    <label>
+      Logo da sua marca:
+      <input type="file" id="logoInput" />
+    </label>
 
-    Orientação do Poster:
-    <select id="orientacao">
-      <option value="vertical">Vertical</option>
-      <option value="horizontal">Horizontal</option>
-    </select><br/><br/>
+    <label>
+      Imagem de fundo:
+      <input type="file" id="bgInput" />
+    </label>
 
-    <button onclick="gerarBanner()">Gerar Banner</button>
-    <button onclick="baixarBanner()">Baixar</button><br/><br/>
+    <label>
+      Orientação do Poster:
+      <select id="orientation">
+        <option value="horizontal">Horizontal</option>
+        <option value="vertical">Vertical</option>
+      </select>
+    </label>
 
-    <canvas id="canvas"></canvas>
+    <button id="generateButton">Gerar Banner</button>
+    <button id="downloadButton" class="hidden">Baixar</button>
+
+    <canvas id="canvas" class="hidden"></canvas>
   </div>
 
   <script src="script.js"></script>
