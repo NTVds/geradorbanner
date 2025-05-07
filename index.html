@@ -4,41 +4,31 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Gerador de Banner</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
   <div class="container">
     <h1>Gerador de Banner</h1>
 
-    <input type="text" id="searchInput" placeholder="Buscar filme, série ou novela..." />
-    <button onclick="searchTMDB()">Buscar</button>
+    <input type="text" id="search" placeholder="Digite o nome do conteúdo"/>
+    <button onclick="buscar()">Buscar</button><br/><br/>
 
-    <select id="resultsSelect" onchange="renderBanner()">
-      <option>Selecione um conteúdo...</option>
-    </select>
+    <select id="conteudo-select"></select> Logo da sua marca:
+    <input type="file" id="logo" accept="image/*"/><br/><br/>
 
-    <label>Logo da sua marca:</label>
-    <input type="file" id="logoInput" accept="image/*" />
+    Imagem de fundo:
+    <input type="file" id="fundo" accept="image/*"/><br/><br/>
 
-    <label>Imagem de fundo:</label>
-    <input type="file" id="bgInput" accept="image/*" />
-
-    <label for="posterOrientation">Orientação do Poster:</label>
-    <select id="posterOrientation">
+    Orientação do Poster:
+    <select id="orientacao">
       <option value="vertical">Vertical</option>
       <option value="horizontal">Horizontal</option>
-      <option value="custom">Personalizado (Slider)</option>
-    </select>
+    </select><br/><br/>
 
-    <div id="angleControl" style="display: none;">
-      <label for="angleRange">Ângulo (°):</label>
-      <input type="range" id="angleRange" min="-90" max="90" value="0" />
-      <span id="angleValue">0°</span>
-    </div>
+    <button onclick="gerarBanner()">Gerar Banner</button>
+    <button onclick="baixarBanner()">Baixar</button><br/><br/>
 
-    <canvas id="bannerCanvas" width="1080" height="1080"></canvas>
-
-    <a id="downloadBtn" download="banner.png">Baixar Banner</a>
+    <canvas id="canvas"></canvas>
   </div>
 
   <script src="script.js"></script>
