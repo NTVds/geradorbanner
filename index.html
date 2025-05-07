@@ -10,22 +10,35 @@
   <div class="container">
     <h1>Gerador de Banner</h1>
 
-    <div class="form">
-      <input type="text" id="tmdbQuery" placeholder="Buscar filme/série/novela" />
-      <button onclick="buscarTMDB()">Buscar</button>
-      <input type="file" id="logoUpload" accept="image/*" />
-      <label>Logo</label>
-      <input type="file" id="bgUpload" accept="image/*" />
-      <label>Imagem de Fundo</label>
+    <input type="text" id="searchInput" placeholder="Buscar filme, série ou novela..." />
+    <button onclick="searchTMDB()">Buscar</button>
+
+    <select id="resultsSelect" onchange="renderBanner()">
+      <option>Selecione um conteúdo...</option>
+    </select>
+
+    <label>Logo da sua marca:</label>
+    <input type="file" id="logoInput" accept="image/*" />
+
+    <label>Imagem de fundo:</label>
+    <input type="file" id="bgInput" accept="image/*" />
+
+    <label for="posterOrientation">Orientação do Poster:</label>
+    <select id="posterOrientation">
+      <option value="vertical">Vertical</option>
+      <option value="horizontal">Horizontal</option>
+      <option value="custom">Personalizado (Slider)</option>
+    </select>
+
+    <div id="angleControl" style="display: none;">
+      <label for="angleRange">Ângulo (°):</label>
+      <input type="range" id="angleRange" min="-90" max="90" value="0" />
+      <span id="angleValue">0°</span>
     </div>
 
-    <div id="resultados"></div>
+    <canvas id="bannerCanvas" width="1080" height="1080"></canvas>
 
-    <div id="previewContainer">
-      <canvas id="bannerCanvas" width="1080" height="1080"></canvas>
-    </div>
-
-    <button id="downloadBtn" onclick="baixarBanner()">Baixar Banner</button>
+    <a id="downloadBtn" download="banner.png">Baixar Banner</a>
   </div>
 
   <script src="script.js"></script>
