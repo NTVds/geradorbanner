@@ -1,35 +1,146 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Gerador de Banner</title>
-  <link rel="stylesheet" href="style.css" />
+  <style>
+    body {
+      background-color: #000;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 10px;
+    }
+    input, select, button {
+      margin: 5px 0;
+      padding: 8px;
+      width: 100%;
+      max-width: 300px;
+      background: #222;
+      color: #fff;
+      border: 1px solid #555;
+      border-radius: 4px;
+    }
+    button {
+      background-color: #800080;
+      cursor: pointer;
+    }
+    canvas {
+      margin-top: 20px;
+      max-width: 100%;
+      border: 2px solid #fff;
+    }
+  </style>
 </head>
 <body>
-  <h1>Gerador de Banner</h1>
-  <input type="text" id="search" placeholder="Digite o nome do filme ou série" />
+
+  <h2>Gerador de Banner</h2>
+
+  <input type="text" id="busca" placeholder="Digite o nome do filme ou série"/>
   <button onclick="buscar()">Buscar</button>
 
-  <select id="resultado"></select><br/>
+  <select id="resultados"></select>
 
-  <label>Logo da sua marca:</label>
-  <input type="file" id="logo" /><br/>
+  <div>
+    <label>Logotipo da sua marca:</label>
+    <input type="file" id="logo" accept="image/*"/>
+  </div>
 
-  <label>Imagem de fundo:</label>
-  <input type="file" id="fundo" /><br/>
+  <div>
+    <label>Imagem de fundo (opcional):</label>
+    <input type="file" id="fundo" accept="image/*"/>
+  </div>
 
-  <label>Orientação do Poster:</label>
-  <select id="orientacao">
-    <option value="horizontal">Horizontal</option>
-    <option value="vertical">Vertical</option>
-  </select><br/>
+  <div>
+    <label>Orientação do banner:</label>
+    <select id="orientacao">
+      <option value="horizontal">Horizontal</option>
+      <option value="vertical">Vertical</option>
+    </select>
+  </div>
 
-  <button onclick="gerarBanner()">Gerar Banner</button>
-  <button onclick="baixarBanner()">Baixar</button>
+  <button onclick="gerar()">Gerar Banner</button>
+  <button onclick="baixar()">Baixar</button>
 
-  <div id="banner"></div>
+  <canvas id="bannerCanvas"></canvas>
 
-  <script src="script.js"></script>
+  <script>
+    const chaveTMDB = "eb93e716b56767d9b0e6d4fdcf25a511";
+
+    async function buscar() {
+      const query = document.getElementById('busca').value;
+      const url = `https://api.themoviedb.org/3/search/multi?api_key=${chaveTMDB}&query=${encodeURIComponent(query)}&language=pt-BR`;
+      const resposta = await fetch(url);
+      const dados = await resposta.json();
+      const select = document.getElementById('resultados');
+      select.innerHTML = '';
+      dados.results.forEach(item => {
+        const option = document.createElement('option');
+        option.value = JSON.stringify(item);
+        option.textContent = item.title || item.name;
+        select.appendChild(option);
+      });
+    }
+
+    async function gerar() {
+      const canvas = document.getElementById('bannerCanvas');
+      const ctx = canvas.getContext('2d');
+      const orientacao = document.getElementById('orientacao').value;
+
+      const largura = orientacao === 'horizontal' ? 1080 : 720;
+      const altura = orientacao === 'horizontal' ? 720 : 1080;
+
+      canvas.width = largura;
+      canvas.height = altura;
+
+      // Fundo
+      const fundoInput = document.getElementById('fundo').files[0];
+      if (fundoInput) {
+        const fundoURL = URL.createObjectURL(fundoInput);
+        const fundoImg = await carregarImagem(fundoURL);
+        ctx.drawImage(fundoImg, 0, 0, largura, altura);
+      } else {
+        ctx.fillStyle = '#2c003e';
+        ctx.fillRect(0, 0, largura, altura);
+      }
+
+      // Dados do TMDB
+      const item = JSON.parse(document.getElementById('resultados').value);
+      const titulo = item.title || item.name;
+      const descricao = item.overview;
+
+      // Texto
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 40px Arial';
+      ctx.fillText(titulo, 30, altura - 80);
+      ctx.font = '20px Arial';
+      ctx.fillText(descricao.slice(0, 100) + '...', 30, altura - 40);
+
+      // Logo
+      const logoInput = document.getElementById('logo').files[0];
+      if (logoInput) {
+        const logoURL = URL.createObjectURL(logoInput);
+        const logoImg = await carregarImagem(logoURL);
+        ctx.drawImage(logoImg, largura - 150, 20, 120, 120);
+      }
+    }
+
+    async function carregarImagem(src) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.src = src;
+      });
+    }
+
+    function baixar() {
+      const canvas = document.getElementById('bannerCanvas');
+      const link = document.createElement('a');
+      link.download = 'banner.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+  </script>
 </body>
 </html>
