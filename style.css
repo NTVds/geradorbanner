@@ -1,36 +1,30 @@
 body {
-  background-color: #111;
+  background-color: #000;
   color: #fff;
   font-family: Arial, sans-serif;
-  padding: 20px;
   text-align: center;
+  padding: 20px;
 }
 
-.container {
-  max-width: 600px;
-  margin: auto;
+input, select, button {
+  margin: 5px;
+  padding: 8px;
+  font-size: 14px;
 }
 
-input, select, button, label {
-  display: block;
-  width: 100%;
-  margin: 10px 0;
-  padding: 10px;
-  font-size: 16px;
+button {
+  background-color: purple;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #5a005a;
 }
 
 canvas {
   margin-top: 20px;
-  border: 2px solid #444;
-  background: #000;
-}
-
-#downloadBtn {
-  display: inline-block;
-  margin-top: 15px;
-  padding: 10px 20px;
-  background: purple;
-  color: white;
-  text-decoration: none;
-  border-radius: 5px;
+  border: 2px solid #fff;
+  max-width: 100%;
 }
