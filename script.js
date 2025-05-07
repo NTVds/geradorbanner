@@ -1,4 +1,4 @@
-const apiKey = 'b3e3c53866b55e2949cf3b40c6470a96'; // TMDB Key
+const apiKey = 'eb93e716b56767d9b0e6d4fdcf25a511'; // TMDB Key
 
 let dadosSelecionados = null;
 
