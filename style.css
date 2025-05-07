@@ -29,16 +29,17 @@ button {
 
 #searchResult {
   margin-top: 20px;
-  border: 1px solid #444;
   padding: 10px;
   background: #111;
-  text-align: left;
+  border: 1px solid #444;
+  border-radius: 10px;
 }
 
 #searchResult img {
   width: 100%;
   max-height: 300px;
   object-fit: cover;
+  border-radius: 10px;
 }
 
 .hidden {
