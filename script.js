@@ -1,61 +1,76 @@
-function buscar() {
-  const termo = document.getElementById('search').value;
-  const select = document.getElementById('conteudo-select');
-  select.innerHTML = `<option>${termo}</option>`;
-}
+const apiKey = '0f89d4bba2a06e4b0e99c6b79d1d58de';
 
-function gerarBanner() {
-  const logoInput = document.getElementById('logo').files[0];
-  const fundoInput = document.getElementById('fundo').files[0];
-  const orientacao = document.getElementById('orientacao').value;
-  const select = document.getElementById('conteudo-select');
-  const titulo = select.options[select.selectedIndex].text;
+document.getElementById('searchButton').addEventListener('click', async () => {
+  const query = document.getElementById('searchInput').value.trim();
+  if (!query) return;
 
-  if (!fundoInput || !logoInput || !titulo) {
-    alert("Selecione fundo, logo e conteúdo.");
+  const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${encodeURIComponent(query)}&language=pt-BR`);
+  const data = await res.json();
+
+  const first = data.results[0];
+  const resultDiv = document.getElementById('searchResult');
+
+  if (!first) {
+    resultDiv.innerHTML = '<p>Nenhum resultado encontrado.</p>';
+    resultDiv.classList.remove('hidden');
     return;
   }
 
-  const readerFundo = new FileReader();
-  const readerLogo = new FileReader();
+  const title = first.title || first.name;
+  const overview = first.overview || 'Sem descrição disponível.';
+  const imageUrl = first.backdrop_path || first.poster_path;
 
-  readerFundo.onload = () => {
-    readerLogo.onload = () => {
-      const fundoImg = new Image();
-      const logoImg = new Image();
+  resultDiv.innerHTML = `
+    <h2>${title}</h2>
+    <img src="https://image.tmdb.org/t/p/w500${imageUrl}" alt="${title}">
+    <p>${overview}</p>
+  `;
+  resultDiv.classList.remove('hidden');
+});
 
-      fundoImg.onload = () => {
-        logoImg.onload = () => {
-          const canvas = document.getElementById('canvas');
-          const ctx = canvas.getContext('2d');
+document.getElementById('generateButton').addEventListener('click', async () => {
+  const orientation = document.getElementById('orientation').value;
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
 
-          let width = orientacao === 'vertical' ? 1080 : 1920;
-          let height = orientacao === 'vertical' ? 1920 : 1080;
+  canvas.width = orientation === 'horizontal' ? 1920 : 1080;
+  canvas.height = orientation === 'horizontal' ? 1080 : 1920;
 
-          canvas.width = width;
-          canvas.height = height;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-          ctx.drawImage(fundoImg, 0, 0, width, height);
-          ctx.drawImage(logoImg, width - 300, 30, 250, 100);
+  const bgFile = document.getElementById('bgInput').files[0];
+  const logoFile = document.getElementById('logoInput').files[0];
+  const title = document.getElementById('searchInput').value;
 
-          ctx.fillStyle = "#ffffff";
-          ctx.font = "bold 80px Arial";
-          ctx.textAlign = "center";
-          ctx.fillText(titulo, width / 2, height - 100);
-        };
-        logoImg.src = readerLogo.result;
-      };
-      fundoImg.src = readerFundo.result;
-    };
-    readerLogo.readAsDataURL(logoInput);
-  };
-  readerFundo.readAsDataURL(fundoInput);
-}
+  if (bgFile) {
+    const bgURL = URL.createObjectURL(bgFile);
+    const bgImage = new Image();
+    bgImage.src = bgURL;
+    await new Promise(res => bgImage.onload = res);
+    ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
+  }
 
-function baixarBanner() {
+  if (logoFile) {
+    const logoURL = URL.createObjectURL(logoFile);
+    const logoImage = new Image();
+    logoImage.src = logoURL;
+    await new Promise(res => logoImage.onload = res);
+    ctx.drawImage(logoImage, canvas.width - 300, 30, 250, 80);
+  }
+
+  ctx.fillStyle = '#fff';
+  ctx.font = 'bold 60px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(title, canvas.width / 2, canvas.height - 60);
+
+  canvas.classList.remove('hidden');
+  document.getElementById('downloadButton').classList.remove('hidden');
+});
+
+document.getElementById('downloadButton').addEventListener('click', () => {
   const canvas = document.getElementById('canvas');
   const link = document.createElement('a');
   link.download = 'banner.png';
-  link.href = canvas.toDataURL('image/png');
+  link.href = canvas.toDataURL();
   link.click();
-}
+});
