@@ -1,94 +1,73 @@
-const apiKey = '0f89d4bba2a06e4b0e99c6b79d1d58de';
+const apiKey = 'b3e3c53866b55e2949cf3b40c6470a96'; // TMDB Key
 
-document.getElementById('searchButton').addEventListener('click', async () => {
-  const query = document.getElementById('searchInput').value.trim();
-  const resultDiv = document.getElementById('searchResult');
-  const titleEl = document.getElementById('resultTitle');
-  const imageEl = document.getElementById('resultImage');
-  const overviewEl = document.getElementById('resultOverview');
+let dadosSelecionados = null;
 
-  if (!query) {
-    alert('Digite um nome para buscar.');
-    return;
-  }
+async function buscar() {
+  const query = document.getElementById("search").value;
+  const res = await fetch(`https://corsproxy.io/?https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&language=pt-BR&query=${encodeURIComponent(query)}`);
+  const data = await res.json();
 
-  try {
-    const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&language=pt-BR&query=${encodeURIComponent(query)}`);
-    const data = await res.json();
+  const select = document.getElementById("resultado");
+  select.innerHTML = "";
 
-    if (!data.results || data.results.length === 0) {
-      resultDiv.classList.remove('hidden');
-      titleEl.textContent = 'Nada encontrado';
-      imageEl.src = '';
-      overviewEl.textContent = '';
-      return;
+  data.results.forEach((item, index) => {
+    const option = document.createElement("option");
+    option.value = index;
+    option.text = item.title || item.name;
+    select.appendChild(option);
+  });
+
+  dadosSelecionados = data.results;
+}
+
+function gerarBanner() {
+  const index = document.getElementById("resultado").value;
+  const item = dadosSelecionados[index];
+  const orientacao = document.getElementById("orientacao").value;
+
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+
+  canvas.width = orientacao === "vertical" ? 1080 : 1920;
+  canvas.height = orientacao === "vertical" ? 1920 : 1080;
+
+  const fundoInput = document.getElementById("fundo").files[0];
+  const logoInput = document.getElementById("logo").files[0];
+
+  const fundoURL = fundoInput ? URL.createObjectURL(fundoInput) : "";
+  const logoURL = logoInput ? URL.createObjectURL(logoInput) : "";
+
+  const imgFundo = new Image();
+  imgFundo.src = fundoURL;
+  imgFundo.onload = () => {
+    ctx.drawImage(imgFundo, 0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = "white";
+    ctx.font = "50px Arial";
+    ctx.fillText(item.title || item.name, 50, canvas.height - 100);
+
+    ctx.font = "30px Arial";
+    ctx.fillText(item.overview || "Sinopse indisponível", 50, canvas.height - 50);
+
+    if (logoURL) {
+      const logo = new Image();
+      logo.src = logoURL;
+      logo.onload = () => {
+        ctx.drawImage(logo, canvas.width - 200, 50, 150, 50);
+        document.getElementById("banner").innerHTML = "";
+        document.getElementById("banner").appendChild(canvas);
+      };
+    } else {
+      document.getElementById("banner").innerHTML = "";
+      document.getElementById("banner").appendChild(canvas);
     }
+  };
+}
 
-    const result = data.results[0];
-    const title = result.title || result.name || 'Sem título';
-    const overview = result.overview || 'Sem descrição';
-    const imagePath = result.backdrop_path || result.poster_path;
-
-    titleEl.textContent = title;
-    overviewEl.textContent = overview;
-    imageEl.src = imagePath ? `https://image.tmdb.org/t/p/w500${imagePath}` : '';
-    imageEl.alt = title;
-
-    resultDiv.classList.remove('hidden');
-  } catch (err) {
-    alert('Erro na busca. Verifique sua conexão.');
-    console.error(err);
-  }
-});
-
-document.getElementById('generateButton').addEventListener('click', async () => {
-  const orientation = document.getElementById('orientation').value;
-  const canvas = document.getElementById('canvas');
-  const ctx = canvas.getContext('2d');
-
-  canvas.width = orientation === 'horizontal' ? 1920 : 1080;
-  canvas.height = orientation === 'horizontal' ? 1080 : 1920;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  const bgFile = document.getElementById('bgInput').files[0];
-  const logoFile = document.getElementById('logoInput').files[0];
-  const title = document.getElementById('resultTitle').textContent;
-
-  // Fundo
-  if (bgFile) {
-    const bgURL = URL.createObjectURL(bgFile);
-    const bgImage = new Image();
-    bgImage.src = bgURL;
-    await new Promise(resolve => bgImage.onload = resolve);
-    ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
-  } else {
-    ctx.fillStyle = '#222';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-  }
-
-  // Logo
-  if (logoFile) {
-    const logoURL = URL.createObjectURL(logoFile);
-    const logoImage = new Image();
-    logoImage.src = logoURL;
-    await new Promise(resolve => logoImage.onload = resolve);
-    ctx.drawImage(logoImage, canvas.width - 320, 30, 280, 80);
-  }
-
-  // Título
-  ctx.fillStyle = '#fff';
-  ctx.font = 'bold 60px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText(title, canvas.width / 2, canvas.height - 60);
-
-  canvas.classList.remove('hidden');
-  document.getElementById('downloadButton').classList.remove('hidden');
-});
-
-document.getElementById('downloadButton').addEventListener('click', () => {
-  const canvas = document.getElementById('canvas');
-  const link = document.createElement('a');
-  link.download = 'banner.png';
+function baixarBanner() {
+  const canvas = document.querySelector("canvas");
+  const link = document.createElement("a");
+  link.download = "banner.png";
   link.href = canvas.toDataURL();
   link.click();
-});
+}
