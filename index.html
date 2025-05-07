@@ -10,16 +10,22 @@
   <div class="container">
     <h1>Gerador de Banner</h1>
 
-    <input type="text" id="searchInput" placeholder="Digite o nome do filme, série ou novela" />
-    <input type="file" id="logoInput" accept="image/*" />
+    <div class="form">
+      <input type="text" id="tmdbQuery" placeholder="Buscar filme/série/novela" />
+      <button onclick="buscarTMDB()">Buscar</button>
+      <input type="file" id="logoUpload" accept="image/*" />
+      <label>Logo</label>
+      <input type="file" id="bgUpload" accept="image/*" />
+      <label>Imagem de Fundo</label>
+    </div>
 
-    <button onclick="buscarConteudo()">Buscar e Gerar Banner</button>
+    <div id="resultados"></div>
 
-    <canvas id="bannerCanvas" width="1080" height="1080"></canvas>
+    <div id="previewContainer">
+      <canvas id="bannerCanvas" width="1080" height="1080"></canvas>
+    </div>
 
-    <a id="downloadLink" style="display: none; margin-top: 20px;" download="banner.png" class="download-btn">
-      Baixar Banner
-    </a>
+    <button id="downloadBtn" onclick="baixarBanner()">Baixar Banner</button>
   </div>
 
   <script src="script.js"></script>
