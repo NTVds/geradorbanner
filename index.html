@@ -4,88 +4,19 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Gerador de Banner - TMDB</title>
-  <style>
-    body { font-family: Arial, sans-serif; background: #111; color: white; text-align: center; padding: 20px; }
-    #preview { position: relative; display: inline-block; margin-top: 20px; }
-    #canvas { border: 2px solid #fff; border-radius: 8px; }
-    input, button { margin: 10px; padding: 10px; }
-  </style>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <h1>Gerador de Banner - TMDB</h1>
-  <input type="text" id="tmdbId" placeholder="ID do TMDB"/>
+  <input type="text" id="search" placeholder="Digite o nome do filme, série ou novela" />
   <input type="file" id="logo" accept="image/*" />
-  <button onclick="gerarBanner()">Gerar Banner</button>
+  <button id="generate">Gerar Banner</button>
   <a id="download" style="display:none" download="banner.jpg">
     <button>Baixar Imagem</button>
   </a>
-  <div id="preview">
+  <div>
     <canvas id="canvas" width="768" height="960"></canvas>
   </div>
-  <script>
-    const apiKey = 'SUA_CHAVE_TMDB';
-    const baseImg = 'bg.jpg';
-    const phoneArea = { x: 500, y: 150, width: 210, height: 370 };
-    const sinopseArea = { x: 40, y: 420, maxWidth: 440 };
-
-    async function gerarBanner() {
-      const tmdbId = document.getElementById('tmdbId').value;
-      const logoFile = document.getElementById('logo').files[0];
-      const canvas = document.getElementById('canvas');
-      const ctx = canvas.getContext('2d');
-
-      const bg = new Image();
-      bg.src = baseImg;
-      await bg.decode();
-      ctx.drawImage(bg, 0, 0);
-
-      if (tmdbId) {
-        const response = await fetch(`https://api.themoviedb.org/3/movie/${tmdbId}?api_key=${apiKey}&language=pt-BR`);
-        const data = await response.json();
-        const poster = new Image();
-        poster.crossOrigin = "anonymous";
-        poster.src = 'https://image.tmdb.org/t/p/w500' + data.poster_path;
-        await poster.decode();
-        ctx.drawImage(poster, phoneArea.x, phoneArea.y, phoneArea.width, phoneArea.height);
-        ctx.font = "20px Arial";
-        ctx.fillStyle = "white";
-        wrapText(ctx, data.overview, sinopseArea.x, sinopseArea.y, sinopseArea.maxWidth, 25);
-      }
-
-      if (logoFile) {
-        const reader = new FileReader();
-        reader.onload = async function(e) {
-          const logo = new Image();
-          logo.src = e.target.result;
-          await logo.decode();
-          ctx.drawImage(logo, 20, 880, 120, 60);
-          document.getElementById('download').href = canvas.toDataURL("image/jpeg");
-          document.getElementById('download').style.display = "inline-block";
-        };
-        reader.readAsDataURL(logoFile);
-      } else {
-        document.getElementById('download').href = canvas.toDataURL("image/jpeg");
-        document.getElementById('download').style.display = "inline-block";
-      }
-    }
-
-    function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
-      const words = text.split(' ');
-      let line = '';
-      for (let n = 0; n < words.length; n++) {
-        let testLine = line + words[n] + ' ';
-        let metrics = ctx.measureText(testLine);
-        let testWidth = metrics.width;
-        if (testWidth > maxWidth && n > 0) {
-          ctx.fillText(line, x, y);
-          line = words[n] + ' ';
-          y += lineHeight;
-        } else {
-          line = testLine;
-        }
-      }
-      ctx.fillText(line, x, y);
-    }
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
