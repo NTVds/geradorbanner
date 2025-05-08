@@ -1,22 +1,134 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
+<!DOCTYPE html><html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Gerador de Banner - TMDB</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gerador de Banner</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #000;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    #banner {
+      position: relative;
+      width: 1080px;
+      height: 1920px;
+      background-image: url('fundo-padrao.jpg'); /* nome da imagem padrão enviada */
+      background-size: cover;
+    }
+    #conteudo-img {
+      position: absolute;
+      top: 480px;
+      left: 300px;
+      width: 480px;
+      height: 850px;
+      object-fit: cover;
+      border-radius: 10px;
+    }
+    #logo {
+      position: absolute;
+      bottom: 60px;
+      left: 60px;
+      width: 180px;
+      height: auto;
+    }
+    #sinopse {
+      position: absolute;
+      top: 1380px;
+      left: 180px;
+      width: 720px;
+      color: #fff;
+      font-size: 32px;
+      line-height: 1.4;
+      text-align: justify;
+    }
+    canvas {
+      display: none;
+    }
+    input, button {
+      margin: 10px;
+      padding: 10px;
+      font-size: 18px;
+    }
+  </style>
 </head>
 <body>
-  <h1>Gerador de Banner - TMDB</h1>
-  <input type="text" id="search" placeholder="Digite o nome do filme, série ou novela" />
-  <input type="file" id="logo" accept="image/*" />
-  <button id="generate">Gerar Banner</button>
-  <a id="download" style="display:none" download="banner.jpg">
-    <button>Baixar Imagem</button>
-  </a>
-  <div>
-    <canvas id="canvas" width="768" height="960"></canvas>
+  <h1>Gerador de Banner</h1>
+  <input type="text" id="busca" placeholder="Digite o nome do filme ou série" />
+  <input type="file" id="upload-logo" accept="image/*" />
+  <button onclick="gerarBanner()">Gerar Banner</button>
+  <button id="download" onclick="baixarImagem()" style="display:none">Baixar Imagem</button>  <div id="banner">
+    <img id="conteudo-img" />
+    <div id="sinopse"></div>
+    <img id="logo" />
   </div>
-  <script src="script.js"></script>
-</body>
+  <canvas id="canvas" width="1080" height="1920"></canvas>  <script>
+    const apiKey = 'eb93e716b56767d9b0e6d4fdcf25a511';
+    let imagemSelecionada = '', textoSinopse = '', logoSrc = '';
+
+    document.getElementById('upload-logo').addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = () => {
+          logoSrc = reader.result;
+          document.getElementById('logo').src = logoSrc;
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    async function gerarBanner() {
+      const query = document.getElementById('busca').value;
+      if (!query) return alert('Digite o nome de um filme ou série.');
+      
+      const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&language=pt-BR&query=${encodeURIComponent(query)}`);
+      const data = await res.json();
+
+      if (data.results.length === 0) return alert('Conteúdo não encontrado.');
+
+      const item = data.results[0];
+      imagemSelecionada = `https://image.tmdb.org/t/p/w500${item.poster_path || item.backdrop_path}`;
+      textoSinopse = item.overview;
+
+      document.getElementById('conteudo-img').src = imagemSelecionada;
+      document.getElementById('sinopse').innerText = textoSinopse;
+      document.getElementById('download').style.display = 'inline-block';
+    }
+
+    function baixarImagem() {
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+
+      const bg = new Image();
+      const img = new Image();
+      const logo = new Image();
+
+      bg.src = 'fundo-padrao.jpg';
+      img.src = imagemSelecionada;
+      logo.src = logoSrc;
+
+      bg.onload = () => {
+        ctx.drawImage(bg, 0, 0, 1080, 1920);
+        img.onload = () => {
+          ctx.drawImage(img, 300, 480, 480, 850);
+          logo.onload = () => {
+            ctx.drawImage(logo, 60, 1860, 180, 60);
+            ctx.fillStyle = '#fff';
+            ctx.font = '32px Arial';
+            ctx.fillText(textoSinopse, 180, 1380, 720);
+
+            const link = document.createElement('a');
+            link.download = 'banner.png';
+            link.href = canvas.toDataURL();
+            link.click();
+          };
+        };
+      };
+    }
+  </script></body>
 </html>
