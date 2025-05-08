@@ -1,134 +1,109 @@
-<!DOCTYPE html><html lang="pt-BR">
+<!DOCTYPE html>
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
   <title>Gerador de Banner</title>
   <style>
     body {
+      background: #111;
+      color: white;
       font-family: Arial, sans-serif;
-      background: #000;
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      text-align: center;
       padding: 20px;
     }
-    #banner {
-      position: relative;
-      width: 1080px;
-      height: 1920px;
-      background-image: url('fundo-padrao.jpg'); /* nome da imagem padrão enviada */
-      background-size: cover;
-    }
-    #conteudo-img {
-      position: absolute;
-      top: 480px;
-      left: 300px;
-      width: 480px;
-      height: 850px;
-      object-fit: cover;
-      border-radius: 10px;
-    }
-    #logo {
-      position: absolute;
-      bottom: 60px;
-      left: 60px;
-      width: 180px;
-      height: auto;
-    }
-    #sinopse {
-      position: absolute;
-      top: 1380px;
-      left: 180px;
-      width: 720px;
-      color: #fff;
-      font-size: 32px;
-      line-height: 1.4;
-      text-align: justify;
-    }
     canvas {
-      display: none;
+      display: block;
+      margin: 20px auto;
+      border: 1px solid #444;
     }
     input, button {
       margin: 10px;
       padding: 10px;
-      font-size: 18px;
     }
   </style>
 </head>
 <body>
-  <h1>Gerador de Banner</h1>
-  <input type="text" id="busca" placeholder="Digite o nome do filme ou série" />
-  <input type="file" id="upload-logo" accept="image/*" />
+  <h2>Gerador de Banner</h2>
+  <input type="text" id="termo" placeholder="Digite o nome do filme ou série">
+  <input type="file" id="logoUpload" accept="image/*">
+  <br>
   <button onclick="gerarBanner()">Gerar Banner</button>
-  <button id="download" onclick="baixarImagem()" style="display:none">Baixar Imagem</button>  <div id="banner">
-    <img id="conteudo-img" />
-    <div id="sinopse"></div>
-    <img id="logo" />
-  </div>
-  <canvas id="canvas" width="1080" height="1920"></canvas>  <script>
-    const apiKey = 'eb93e716b56767d9b0e6d4fdcf25a511';
-    let imagemSelecionada = '', textoSinopse = '', logoSrc = '';
+  <button id="baixarBtn" style="display:none" onclick="baixarBanner()">Baixar Banner</button>
+  <canvas id="bannerCanvas" width="1080" height="1920"></canvas>
 
-    document.getElementById('upload-logo').addEventListener('change', e => {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = () => {
-          logoSrc = reader.result;
-          document.getElementById('logo').src = logoSrc;
-        };
-        reader.readAsDataURL(file);
-      }
-    });
+  <script>
+    const API_KEY = "eb93e716b56767d9b0e6d4fdcf25a511";
+    const canvas = document.getElementById('bannerCanvas');
+    const ctx = canvas.getContext('2d');
 
     async function gerarBanner() {
-      const query = document.getElementById('busca').value;
-      if (!query) return alert('Digite o nome de um filme ou série.');
-      
-      const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&language=pt-BR&query=${encodeURIComponent(query)}`);
-      const data = await res.json();
+      const termo = document.getElementById("termo").value;
+      const logoFile = document.getElementById("logoUpload").files[0];
 
-      if (data.results.length === 0) return alert('Conteúdo não encontrado.');
+      if (!termo) return alert("Digite um título.");
 
-      const item = data.results[0];
-      imagemSelecionada = `https://image.tmdb.org/t/p/w500${item.poster_path || item.backdrop_path}`;
-      textoSinopse = item.overview;
+      const busca = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&language=pt-BR&query=${encodeURIComponent(termo)}`);
+      const resultado = await busca.json();
+      const item = resultado.results?.[0];
 
-      document.getElementById('conteudo-img').src = imagemSelecionada;
-      document.getElementById('sinopse').innerText = textoSinopse;
-      document.getElementById('download').style.display = 'inline-block';
+      if (!item) return alert("Nenhum resultado encontrado.");
+
+      const imgPath = item.poster_path || item.backdrop_path;
+      const sinopse = item.overview || "Sinopse não encontrada.";
+
+      const fundo = await carregarImagem("fundo-padrao.jpg");
+      const imagemTMDB = imgPath ? await carregarImagem(`https://image.tmdb.org/t/p/w500${imgPath}`) : null;
+      const logo = logoFile ? await carregarImagem(URL.createObjectURL(logoFile)) : null;
+
+      ctx.drawImage(fundo, 0, 0, canvas.width, canvas.height);
+
+      if (imagemTMDB) ctx.drawImage(imagemTMDB, 340, 240, 400, 600); // dentro da moldura
+
+      ctx.fillStyle = "#fff";
+      ctx.font = "bold 40px Arial";
+      ctx.fillText("SINOPSE", 80, 900);
+
+      ctx.font = "30px Arial";
+      wrapText(ctx, sinopse, 80, 950, 920, 40);
+
+      if (logo) ctx.drawImage(logo, 40, 1720, 300, 100); // canto inferior esquerdo
+
+      document.getElementById("baixarBtn").style.display = "inline-block";
     }
 
-    function baixarImagem() {
-      const canvas = document.getElementById('canvas');
-      const ctx = canvas.getContext('2d');
-
-      const bg = new Image();
-      const img = new Image();
-      const logo = new Image();
-
-      bg.src = 'fundo-padrao.jpg';
-      img.src = imagemSelecionada;
-      logo.src = logoSrc;
-
-      bg.onload = () => {
-        ctx.drawImage(bg, 0, 0, 1080, 1920);
-        img.onload = () => {
-          ctx.drawImage(img, 300, 480, 480, 850);
-          logo.onload = () => {
-            ctx.drawImage(logo, 60, 1860, 180, 60);
-            ctx.fillStyle = '#fff';
-            ctx.font = '32px Arial';
-            ctx.fillText(textoSinopse, 180, 1380, 720);
-
-            const link = document.createElement('a');
-            link.download = 'banner.png';
-            link.href = canvas.toDataURL();
-            link.click();
-          };
-        };
-      };
+    function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+      const words = text.split(' ');
+      let line = '';
+      for (let n = 0; n < words.length; n++) {
+        const testLine = line + words[n] + ' ';
+        const metrics = ctx.measureText(testLine);
+        if (metrics.width > maxWidth && n > 0) {
+          ctx.fillText(line, x, y);
+          line = words[n] + ' ';
+          y += lineHeight;
+        } else {
+          line = testLine;
+        }
+      }
+      ctx.fillText(line, x, y);
     }
-  </script></body>
+
+    function carregarImagem(src) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = src;
+      });
+    }
+
+    function baixarBanner() {
+      const link = document.createElement('a');
+      link.download = 'banner.png';
+      link.href = canvas.toDataURL();
+      link.click();
+    }
+  </script>
+</body>
 </html>
