@@ -1,146 +1,152 @@
-<!DOCTYPE html><html lang="pt-BR">
+<!DOCTYPE html>
+<html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gerador de Banner TMDB</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gerador de Banner - TMDB</title>
   <style>
     body {
-      background-image: url('https://i.imgur.com/BkX3o46.jpeg'); /* Fundo padrão */
-      background-size: cover;
-      background-position: center;
+      margin: 0;
       font-family: Arial, sans-serif;
+      background: #000 url('https://i.imgur.com/DSZQZz1.jpg') center/cover no-repeat;
       color: white;
-      text-align: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      flex-direction: column;
     }
     .container {
-      background-color: rgba(0, 0, 0, 0.7);
-      margin: 20px auto;
+      background: rgba(0, 0, 0, 0.85);
       padding: 20px;
-      max-width: 800px;
       border-radius: 12px;
+      text-align: center;
+      max-width: 400px;
+      width: 100%;
     }
-    #posterPreview {
-      width: 220px;
-      height: 390px;
-      border: 5px solid #fff;
-      margin: 10px auto;
-      background-size: cover;
-      background-position: center;
+    input[type="text"] {
+      width: 80%;
+      padding: 10px;
+      border-radius: 5px;
+      border: none;
+      margin-bottom: 10px;
     }
-    .logoPreview {
-      position: absolute;
-      bottom: 20px;
-      left: 20px;
-      width: 80px;
-      height: auto;
+    button {
+      padding: 10px;
+      margin: 5px;
+      border: none;
+      border-radius: 5px;
+      background: purple;
+      color: white;
+      cursor: pointer;
     }
     canvas {
+      margin-top: 20px;
       display: none;
-    }
-    button, input {
-      margin: 10px;
-      padding: 10px;
-      border-radius: 6px;
-      border: none;
-      font-size: 16px;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Gerador de Banner - TMDB</h1>
-    <input type="text" id="searchInput" placeholder="Digite o nome do filme, série...">
-    <button onclick="buscarTMDB()">Buscar</button><br>
-    <input type="file" id="logoInput" accept="image/*">
-    <div id="posterPreview"></div>
-    <div id="title"></div>
-    <div id="sinopse"></div>
+    <h2>Gerador de Banner - TMDB</h2>
+    <input type="text" id="titulo" placeholder="Digite o nome do conteúdo...">
+    <button onclick="buscarTMDB()">Buscar</button>
+    <br><br>
+    <input type="file" id="logo" accept="image/*">
+    <br><br>
+    <div id="info"></div>
     <button onclick="gerarBanner()">Gerar Banner</button>
     <button onclick="baixarBanner()">Baixar</button>
-    <canvas id="canvas" width="1080" height="1920"></canvas>
-  </div>  <script>
-    const tmdbKey = 'eb93e716b56767d9b0e6d4fdcf25a511';
-    let posterUrl = '', titulo = '', sinopse = '', logoImg = null;
+    <canvas id="bannerCanvas" width="1080" height="1080"></canvas>
+  </div>
 
-    document.getElementById('logoInput').addEventListener('change', e => {
-      const reader = new FileReader();
-      reader.onload = () => { logoImg = reader.result; };
-      reader.readAsDataURL(e.target.files[0]);
-    });
+  <script>
+    const apiKey = 'eb93e716b56767d9b0e6d4fdcf25a511';
 
-    async function buscarTMDB() {
-      const query = document.getElementById('searchInput').value;
-      const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${tmdbKey}&query=${encodeURIComponent(query)}&language=pt-BR`);
-      const data = await res.json();
-      if (data.results.length) {
-        const item = data.results[0];
-        titulo = item.title || item.name;
-        sinopse = item.overview;
-        posterUrl = `https://image.tmdb.org/t/p/w500${item.poster_path}`;
-
-        document.getElementById('posterPreview').style.backgroundImage = `url(${posterUrl})`;
-        document.getElementById('title').innerText = titulo;
-        document.getElementById('sinopse').innerText = sinopse;
-      }
+    let dadosFilme = null;
+    function buscarTMDB() {
+      const titulo = document.getElementById('titulo').value;
+      fetch(`https://api.themoviedb.org/3/search/multi?api_key=${apiKey}&query=${encodeURIComponent(titulo)}&language=pt-BR`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.results.length > 0) {
+            dadosFilme = data.results[0];
+            document.getElementById('info').innerHTML = `<p><strong>${dadosFilme.title || dadosFilme.name}</strong><br>${dadosFilme.overview}</p>`;
+          } else {
+            document.getElementById('info').innerText = 'Nada encontrado.';
+          }
+        });
     }
 
     function gerarBanner() {
-      const canvas = document.getElementById('canvas');
-      const ctx = canvas.getContext('2d');
+      if (!dadosFilme) return alert("Busque algo primeiro!");
+      const canvas = document.getElementById("bannerCanvas");
+      const ctx = canvas.getContext("2d");
+      canvas.style.display = "block";
 
       const fundo = new Image();
-      fundo.src = 'https://i.imgur.com/BkX3o46.jpeg';
+      fundo.src = "https://i.imgur.com/DSZQZz1.jpg"; // fundo padrão
       fundo.onload = () => {
         ctx.drawImage(fundo, 0, 0, canvas.width, canvas.height);
 
-        const poster = new Image();
-        poster.crossOrigin = 'anonymous';
-        poster.src = posterUrl;
-        poster.onload = () => {
-          ctx.drawImage(poster, 430, 220, 220, 390); // dentro da moldura do celular
-          
-          ctx.fillStyle = '#fff';
-          ctx.font = 'bold 36px Arial';
-          ctx.fillText(titulo, 100, 700);
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.src = `https://image.tmdb.org/t/p/w500${dadosFilme.poster_path}`;
 
-          ctx.font = '24px Arial';
-          ctx.fillText('Sinopse:', 100, 760);
-          wrapText(ctx, sinopse, 100, 800, 880, 28);
+        img.onload = () => {
+          ctx.drawImage(img, 290, 50, 500, 750);
 
-          if (logoImg) {
-            const logo = new Image();
-            logo.src = logoImg;
-            logo.onload = () => {
-              ctx.drawImage(logo, 20, canvas.height - 100, 100, 100);
+          // Título
+          ctx.font = "bold 40px Arial";
+          ctx.fillStyle = "white";
+          ctx.textAlign = "center";
+          ctx.fillText(dadosFilme.title || dadosFilme.name, 540, 850);
+
+          // Sinopse
+          ctx.font = "24px Arial";
+          wrapText(ctx, dadosFilme.overview, 540, 900, 900, 30);
+
+          const logoInput = document.getElementById('logo');
+          if (logoInput.files.length > 0) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+              const logo = new Image();
+              logo.src = e.target.result;
+              logo.onload = () => {
+                ctx.drawImage(logo, 800, 50, 200, 200);
+              };
             };
+            reader.readAsDataURL(logoInput.files[0]);
           }
         };
       };
     }
 
-    function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+    function wrapText(context, text, x, y, maxWidth, lineHeight) {
       const words = text.split(' ');
       let line = '';
       for (let n = 0; n < words.length; n++) {
         const testLine = line + words[n] + ' ';
-        const metrics = ctx.measureText(testLine);
-        if (metrics.width > maxWidth && n > 0) {
-          ctx.fillText(line, x, y);
+        const metrics = context.measureText(testLine);
+        const testWidth = metrics.width;
+        if (testWidth > maxWidth && n > 0) {
+          context.fillText(line, x, y);
           line = words[n] + ' ';
           y += lineHeight;
         } else {
           line = testLine;
         }
       }
-      ctx.fillText(line, x, y);
+      context.fillText(line, x, y);
     }
 
     function baixarBanner() {
-      const canvas = document.getElementById('canvas');
+      const canvas = document.getElementById("bannerCanvas");
       const link = document.createElement('a');
       link.download = 'banner_tmdb.png';
-      link.href = canvas.toDataURL('image/png');
+      link.href = canvas.toDataURL();
       link.click();
     }
-  </script></body>
+  </script>
+</body>
 </html>
