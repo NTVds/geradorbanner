@@ -1,22 +1,17 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gerador de Banner TMDB</title>
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <title>Gerador de Banner</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
     <h1>Gerador de Banner</h1>
-    <input type="text" id="search" placeholder="Digite o nome do filme, série ou novela" />
-    <input type="file" id="logoInput" accept="image/*" />
-    <button onclick="gerarBanner()">Gerar Imagem</button>
+    <input type="text" id="tmdbQuery" placeholder="Buscar no TMDB...">
+    <button onclick="buscarTMDB()">Buscar e Gerar Imagem</button>
     <button onclick="baixarImagem()">Baixar Imagem</button>
-    
-    <canvas id="canvas" width="768" height="960"></canvas>
-  </div>
-
-  <script src="script.js"></script>
+    <br><br>
+    <canvas id="canvas" width="1080" height="1350"></canvas>
+    <script src="script.js"></script>
 </body>
 </html>
